@@ -100,16 +100,23 @@ Goal: layer ordering rules onto the waiting list, each behind a toggle. Build a 
 42. **Statistics export** — download an Excel file with stats for the current debate and across debates.
 43. **Show/hide countdown on page 2** — manager toggle.
 
-## Phase 9 — Hardening
+## Phase 9 — Hardening & display access
 44. Realtime edge cases: refresh mid-timer, reconnect, two managers open.
 45. Responsive layouts for projector/large displays (pages 2 & 3).
 46. Error/empty/loading states.
-47. Final deploy + walkthrough of a full mock debate.
+47. **Read-only display link** — a shared, no-login link for the projector screens
+    (pages 2 & 3), so an operator doesn't have to log in on the display machine.
+    Until this phase ships, all three windows require login (see Decisions).
+48. Final deploy + walkthrough of a full mock debate.
 
 ---
 
 ## Decisions (settled)
-- **All three windows require login.** No public/open routes; every view sits behind auth.
+- **All three windows require login for now.** Every view sits behind auth. A shared
+  read-only link for the display windows (pages 2 & 3) is a later enhancement — see Phase 9, step 47.
+- **Frontend uses the Supabase *publishable* key only** (`sb_publishable_...`), never the
+  secret/service-role key. `VITE_`-prefixed vars ship to the browser; the secret key bypasses
+  RLS, so it must never appear in client code. Any admin-only work runs server-side.
 - **Speaker fields:** `name`, `gender`, `created_at` only. No extra metadata.
 - **Statistics = a speech log** (`speech_log` table). One record per speech event, containing:
   the speaker's register info, how long they spoke, whether it was their first time in the
