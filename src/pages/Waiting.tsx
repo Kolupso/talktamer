@@ -2,56 +2,45 @@ import {
   ActiveDebateProvider,
   useActiveDebate,
 } from '../debate/ActiveDebateProvider'
-import { useWaitingList } from '../hooks/useWaitingList'
+import { useOrderedWaiting } from '../hooks/useOrderedWaiting'
+import WaitingRows from '../components/WaitingRows'
 
 function WaitingInner() {
   const { activeDebate, loading: debateLoading } = useActiveDebate()
-  const { entries, loading } = useWaitingList(activeDebate?.id ?? null)
+  const rule1 = activeDebate?.rule1_enabled ?? false
+  const rule2 = activeDebate?.rule2_enabled ?? false
+  const { entries, loading } = useOrderedWaiting(activeDebate?.id ?? null, {
+    rule1,
+    rule2,
+  })
 
-  if (debateLoading) {
-    return <Centered>Loading…</Centered>
-  }
-  if (!activeDebate) {
-    return <Centered>No active debate.</Centered>
-  }
+  if (debateLoading) return <Centered>Loading…</Centered>
+  if (!activeDebate) return <Centered>No active debate.</Centered>
+
+  // Gender indicators show only when rule 2 is on AND the manager left them on.
+  const showGender = rule2 && activeDebate.show_gender_indicators
 
   return (
     <div style={{ padding: '2rem', maxWidth: 800, margin: '0 auto' }}>
-      <h1 style={{ textAlign: 'center' }}>{activeDebate.name}</h1>
+      <h1 style={{ textAlign: 'center' }}>
+        {activeDebate.name}
+        {activeDebate.list_closed && (
+          <span title="List closed to new sign-ups" style={{ marginLeft: '0.75rem' }}>
+            🚫
+          </span>
+        )}
+      </h1>
       {loading ? (
         <Centered>Loading…</Centered>
       ) : entries.length === 0 ? (
         <Centered>No speakers waiting.</Centered>
       ) : (
-        <ol style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-          {entries.map((e, i) => (
-            <li
-              key={e.id}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '1rem',
-                padding: '0.75rem 1rem',
-                borderBottom: '1px solid var(--border)',
-                fontSize: '1.5rem',
-              }}
-            >
-              <span
-                style={{
-                  minWidth: '2ch',
-                  textAlign: 'right',
-                  color: 'var(--text-muted)',
-                }}
-              >
-                {i + 1}
-              </span>
-              <span style={{ flex: 1 }}>{e.speaker.name}</span>
-              <span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>
-                {e.is_first_time ? '1st time' : 'multiple'}
-              </span>
-            </li>
-          ))}
-        </ol>
+        <WaitingRows
+          entries={entries}
+          rule1={rule1}
+          showGender={showGender}
+          fontSize="1.5rem"
+        />
       )}
     </div>
   )

@@ -13,7 +13,7 @@ export async function fetchWaiting(debateId: number): Promise<WaitingEntry[]> {
     .from('waiting_list')
     .select('*, speaker:speakers(*)')
     .eq('debate_id', debateId)
-    .order('entered_at', { ascending: true })
+    .order('position', { ascending: true })
     .order('id', { ascending: true }) // stable tiebreak
   if (error) throw error
 
@@ -47,9 +47,19 @@ export async function addToWaiting(
   )
   if (pErr) throw pErr
 
+  // Append to the end: position = current max + 1.
+  const { data: last } = await supabase
+    .from('waiting_list')
+    .select('position')
+    .eq('debate_id', debateId)
+    .order('position', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  const nextPosition = (last?.position ?? 0) + 1
+
   const { error } = await supabase
     .from('waiting_list')
-    .insert({ debate_id: debateId, speaker_id: speakerId })
+    .insert({ debate_id: debateId, speaker_id: speakerId, position: nextPosition })
   if (error) {
     if (error.code === '23505') {
       throw new Error('That speaker is already on the waiting list.')
@@ -58,6 +68,7 @@ export async function addToWaiting(
   }
 }
 
+/** Fully remove an entry from the waiting list. */
 export async function removeFromWaiting(entryId: number): Promise<void> {
   const { error } = await supabase
     .from('waiting_list')
@@ -66,22 +77,26 @@ export async function removeFromWaiting(entryId: number): Promise<void> {
   if (error) throw error
 }
 
-/**
- * Reorder by swapping the entry times of two adjacent entries.
- * (Ordering is by entered_at; swapping moves one past the other.)
- */
-export async function swapOrder(
-  a: WaitingEntry,
-  b: WaitingEntry,
+/** Rule 3: mark an entry skipped (stays visible) or restore it. */
+export async function setSkipped(
+  entryId: number,
+  skipped: boolean,
 ): Promise<void> {
-  const { error: e1 } = await supabase
+  const { error } = await supabase
     .from('waiting_list')
-    .update({ entered_at: b.entered_at })
-    .eq('id', a.id)
-  if (e1) throw e1
-  const { error: e2 } = await supabase
-    .from('waiting_list')
-    .update({ entered_at: a.entered_at })
-    .eq('id', b.id)
-  if (e2) throw e2
+    .update({ skipped })
+    .eq('id', entryId)
+  if (error) throw error
+}
+
+/** Persist a computed order (waiting_list ids in the desired sequence). */
+export async function reorderWaiting(
+  debateId: number,
+  orderedIds: number[],
+): Promise<void> {
+  const { error } = await supabase.rpc('reorder_waiting', {
+    p_debate_id: debateId,
+    p_ids: orderedIds,
+  })
+  if (error) throw error
 }

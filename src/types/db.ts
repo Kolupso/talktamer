@@ -46,6 +46,7 @@ export interface WaitingListEntry {
   debate_id: number
   speaker_id: number
   entered_at: string
+  position: number
   locked: boolean
   skipped: boolean
 }

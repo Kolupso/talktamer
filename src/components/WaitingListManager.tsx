@@ -1,18 +1,28 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useActiveDebate } from '../debate/ActiveDebateProvider'
-import { useWaitingList } from '../hooks/useWaitingList'
+import { useOrderedWaiting, type OrderedEntry } from '../hooks/useOrderedWaiting'
 import { listSpeakers } from '../data/speakers'
 import {
   addToWaiting,
   removeFromWaiting,
-  swapOrder,
+  reorderWaiting,
+  setSkipped,
 } from '../data/waitingList'
+import WaitingRows from './WaitingRows'
 import type { Speaker } from '../types/db'
 
 export default function WaitingListManager() {
   const { activeDebate } = useActiveDebate()
   const debateId = activeDebate?.id ?? null
-  const { entries, loading, error, refresh } = useWaitingList(debateId)
+  const rule1 = activeDebate?.rule1_enabled ?? false
+  const rule2 = activeDebate?.rule2_enabled ?? false
+  const rule3 = activeDebate?.rule3_enabled ?? false
+
+  const { entries, loading, error, refresh } = useOrderedWaiting(
+    debateId,
+    { rule1, rule2 },
+    true, // manager persists the computed order
+  )
 
   const [speakers, setSpeakers] = useState<Speaker[]>([])
   const [search, setSearch] = useState('')
@@ -37,38 +47,79 @@ export default function WaitingListManager() {
       .slice(0, 8)
   }, [speakers, search])
 
-  async function handleAdd(speakerId: number) {
-    if (!debateId) return
+  async function run(fn: () => Promise<void>) {
     setActionError(null)
     try {
-      await addToWaiting(debateId, speakerId)
-      setSearch('')
+      await fn()
       await refresh()
     } catch (e) {
       setActionError((e as Error).message)
     }
   }
 
-  async function handleRemove(entryId: number) {
-    setActionError(null)
-    try {
-      await removeFromWaiting(entryId)
-      await refresh()
-    } catch (e) {
-      setActionError((e as Error).message)
-    }
+  async function handleAdd(speakerId: number) {
+    if (!debateId) return
+    await run(async () => {
+      await addToWaiting(debateId, speakerId)
+      setSearch('')
+    })
   }
 
   async function move(index: number, dir: -1 | 1) {
-    const other = index + dir
-    if (other < 0 || other >= entries.length) return
-    setActionError(null)
-    try {
-      await swapOrder(entries[index], entries[other])
-      await refresh()
-    } catch (e) {
-      setActionError((e as Error).message)
-    }
+    if (!debateId) return
+    const j = index + dir
+    if (j < 0 || j >= entries.length) return
+    const ids = entries.map((e) => e.id)
+    ;[ids[index], ids[j]] = [ids[j], ids[index]]
+    await run(() => reorderWaiting(debateId, ids))
+  }
+
+  const rulesControlOrder = rule1 || rule2
+
+  function actions(e: OrderedEntry, i: number) {
+    return (
+      <span style={{ whiteSpace: 'nowrap' }}>
+        {!rulesControlOrder && (
+          <>
+            <button type="button" disabled={i === 0} onClick={() => move(i, -1)}>
+              ↑
+            </button>{' '}
+            <button
+              type="button"
+              disabled={i === entries.length - 1}
+              onClick={() => move(i, 1)}
+            >
+              ↓
+            </button>{' '}
+          </>
+        )}
+        {rule3 ? (
+          e.skipped ? (
+            <>
+              <button type="button" onClick={() => run(() => setSkipped(e.id, false))}>
+                Restore
+              </button>{' '}
+              <button type="button" className="danger" onClick={() => run(() => removeFromWaiting(e.id))}>
+                Delete
+              </button>
+            </>
+          ) : (
+            <>
+              <button type="button" onClick={() => run(() => setSkipped(e.id, true))}>
+                Skip
+              </button>{' '}
+              <button type="button" className="danger" onClick={() => run(() => removeFromWaiting(e.id))}>
+                Delete
+              </button>
+            </>
+          )
+        ) : (
+          <button type="button" className="danger" onClick={() => run(() => removeFromWaiting(e.id))}>
+            Remove
+          </button>
+        )}
+      </span>
+    )
   }
 
   if (!activeDebate) {
@@ -84,11 +135,17 @@ export default function WaitingListManager() {
 
   return (
     <section style={panel}>
-      <h2>Waiting list</h2>
+      <h2>
+        Waiting list
+        {activeDebate.list_closed && (
+          <span title="List closed to new sign-ups" style={{ marginLeft: '0.5rem' }}>
+            🚫
+          </span>
+        )}
+      </h2>
       {error && <p style={{ color: 'var(--danger)' }}>{error}</p>}
       {actionError && <p style={{ color: 'var(--danger)' }}>{actionError}</p>}
 
-      {/* Search the register and add by name or id */}
       <div style={{ marginBottom: '0.75rem' }}>
         <input
           placeholder="Add speaker — search register by name or id"
@@ -109,12 +166,7 @@ export default function WaitingListManager() {
                     <code>{s.id}</code> {s.name}{' '}
                     <span style={{ color: 'var(--text-muted)' }}>({s.gender})</span>
                   </span>
-                  <button
-                    type="button"
-                    className="primary"
-                    disabled={already}
-                    onClick={() => handleAdd(s.id)}
-                  >
+                  <button type="button" className="primary" disabled={already} onClick={() => handleAdd(s.id)}>
                     {already ? 'On list' : 'Add'}
                   </button>
                 </li>
@@ -129,53 +181,12 @@ export default function WaitingListManager() {
       ) : entries.length === 0 ? (
         <p style={{ color: 'var(--text-muted)' }}>The waiting list is empty.</p>
       ) : (
-        <table>
-          <thead>
-            <tr>
-              <th style={{ width: 40 }}>#</th>
-              <th>Speaker</th>
-              <th style={{ width: 90 }}>Status</th>
-              <th style={{ width: 170 }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {entries.map((e, i) => (
-              <tr key={e.id}>
-                <td>{i + 1}</td>
-                <td>
-                  <code>{e.speaker_id}</code> {e.speaker.name}
-                </td>
-                <td>
-                  <span
-                    style={{
-                      fontSize: '0.8rem',
-                      padding: '0.1rem 0.4rem',
-                      borderRadius: 4,
-                      background: 'var(--code-bg)',
-                    }}
-                  >
-                    {e.is_first_time ? '1st time' : 'multiple'}
-                  </span>
-                </td>
-                <td>
-                  <button type="button" disabled={i === 0} onClick={() => move(i, -1)}>
-                    ↑
-                  </button>{' '}
-                  <button
-                    type="button"
-                    disabled={i === entries.length - 1}
-                    onClick={() => move(i, 1)}
-                  >
-                    ↓
-                  </button>{' '}
-                  <button type="button" className="danger" onClick={() => handleRemove(e.id)}>
-                    Remove
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <WaitingRows
+          entries={entries}
+          rule1={rule1}
+          showGender={rule2}
+          renderActions={actions}
+        />
       )}
     </section>
   )
