@@ -1,0 +1,75 @@
+I want to create an app that can be used to manage debates. The app is very all around meaning that it can handle a register of speakers 
+with a few information and statistics, a speaking waiting list and a timer that count down for the current speaker.
+
+The app should contain three browser windows. 
+1. The manager window. Here the chairman will manage who is in the register, adding speakers to the waiting list, switching 
+between debates, starting and stopping the countdown for the current speaker and applying rules for the debate.
+2. A window showing the spealng waiting list
+3. A window meant for the current speaker showing the coundown.
+
+Technical setup. I have a domain registered via Cloudflare. I want to use a GitHub to keep track of my code. I have a supabase for the
+tables that is nessasary for keeping track of stuff. I would prefer a setup with React
+
+Specific requirements:
+- The manager should be able to create and switch between debates. However only one debate will take place at the time
+- There will be a few users who should have access to the app.
+- For each debate a speaker is a first time speaker the first time they speak and then they become multiple time speakers. The time they
+have to make their speach depend on whether they speak for the first time or as a multiple time speaker in the debate
+- The manager should be able to define the speaker time for first and multiple time speakers
+- The app automatically adjust the speakers time depending on whether it is a first or multiple time speaker of special rule 1 is enabled
+- The count should turn yellow and red when x seconds remain of a speakers time. The manager can set the thresholds
+- The possibility to turn on/off the yellow and red indications on page 3 should be determined by the manager
+- Information about a speaker in the register should contain gender, name and maybe some metadata. Each speaker gets an id automatically.
+- There should be three types of gender (man, woman or enby)
+- The manager should be able to turn on a icon indicating that no more can be put on the waiting speakers list for the debate. However
+it should still be possible for the manager to add to the speakers waiting list. So the icon does not change the functionality.
+- The icon should be visable on page 2 and in the manager dashboard
+
+Special rules:
+In general the ranking on the speakers waiting list is determined by the time a speaker has entered the waiting list. It should however
+be possible to enable two extra sets of rules
+1. First time speakers go before multiple time speakers
+2. The use of zebra stripes so that (if possible) every other speaker should be a woman/enby speaker
+3. When a speaker is removed from the speakers waiting list it can either stay in the speakers waiting list or be removed visually from
+the speakers waiting list. If they stay they there should be a visually indication and they are skipped when their turn comes
+
+
+The manager should be able to turn off/on these rules from the manager dashboard and both rules 1 and 2 may be applied at the same time. If that
+is the case then rule 1. have priority over rule 2.
+
+The rule about speaker 1 and 2:
+To make sure that the people participating in the debate do not have to run to the speaker stand because they enter right at the top of 
+the speakers waiting list because they are first time speakers and all the other are multiple, there is a rule that lock speaker 1 and 2.
+Once a speaker reaches the position 1 or 2 on the speakers waiting list, they cannot be overtaken by other speakers. Imaging, special rule
+2 is enabled and only five men are at the speakers waiting list. A woman is signed up to the waiting list. Then she will be put in position
+3 because 1 and 2 are locked.
+
+The manager dashboard (page 1):
+- A rough scetch of the manager dashboard contains the countdown timer, buttoms for starting, pausing and resetting the count down.
+- An overrview of the register of speakers as well as posibilities to add, delete and change speakers in the register.
+- A buttom to continue to the next speaker. The count down should not start automatically
+- A presentation of the speakers waiting list and the possibility to add, remove and move speakers up or down on the speakers waiting list.
+- Speakers can be added to the speakers waiting list by its name or id
+- It should be possible to search through the register on name or id and then click a buttom to add the speaker to the speakers waiting list
+- If special rule 1 is enabled, the speakers waiting list should be devided visually into first and multiple time speakers
+- If special rule 2 is enabled, there should be an indication for the speakers in the register and speakers waiting that shows the gender
+- Buttoms to define the speaking time for first and multiple time speakers
+- Buttom to turn on the icon as describes in special requirements
+- The possibility to change and create a new debate.
+- The possibility to extract fundamental statistics about the current and debates in generel. (download excel file)
+- A way to upload csv or excel file with information on speakers adding the speakers to the register
+- A way to download the register
+- The possibility to turn on/off special rules 1, 2 and 3
+- An estimation of the remaining time of the debate. Calculated by adding the maximum speaker time for the remaining speakers in the 
+speakers waiting list (skipping removed speakers)
+
+Window with speakers waiting list (page 2):
+- The pinned speakers (1 and 2) at the top of the page
+- If special rule 1 is enabled the speakers waiting list should be divided into first and multiple time speakers
+- If special rule 2 is enabled indications of gender should be visable. However the manager should be able to turn it off
+- It should be possible to show the count down on this screen as well but the manage can turn it on/off from their dashboard
+
+Window for count down (page 3):
+- Show the count down for the current speaker
+- Show yellow and red indications at the thresholds defined by the manager
+- The manager should be able to turn of the indication of yellow and red for this page
