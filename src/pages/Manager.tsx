@@ -3,6 +3,7 @@ import { useAuth } from '../auth/AuthProvider'
 import { ActiveDebateProvider } from '../debate/ActiveDebateProvider'
 import DebateBar from '../components/DebateBar'
 import DebateSettings from '../components/DebateSettings'
+import TimerController from '../components/TimerController'
 import WaitingListManager from '../components/WaitingListManager'
 import SpeakerRegister from '../components/SpeakerRegister'
 
@@ -31,8 +32,9 @@ export default function Manager() {
         </header>
 
         <DebateBar />
-        <DebateSettings />
+        <TimerController />
         <WaitingListManager />
+        <DebateSettings />
         <SpeakerRegister />
       </main>
     </ActiveDebateProvider>

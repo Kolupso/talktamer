@@ -1,8 +1,85 @@
+import {
+  ActiveDebateProvider,
+  useActiveDebate,
+} from '../debate/ActiveDebateProvider'
+import { useTimer, timerColor, COLOR_HEX } from '../hooks/useTimer'
+import { formatClock } from '../data/timer'
+
+function CountdownInner() {
+  const { activeDebate, loading: debateLoading } = useActiveDebate()
+  const { timer, remaining } = useTimer(activeDebate?.id ?? null)
+
+  if (debateLoading) return <Centered muted>Loading…</Centered>
+  if (!activeDebate) return <Centered muted>No active debate.</Centered>
+
+  const hasSpeaker = Boolean(timer?.current_speaker_id)
+  if (!hasSpeaker) return <Centered muted>Waiting for the next speaker…</Centered>
+
+  // Page 3 colour indication can be turned off by the manager.
+  const color = activeDebate.show_color_indicators
+    ? timerColor(
+        remaining,
+        activeDebate.yellow_threshold_seconds,
+        activeDebate.red_threshold_seconds,
+      )
+    : 'normal'
+
+  return (
+    <div
+      style={{
+        minHeight: '100svh',
+        display: 'grid',
+        placeItems: 'center',
+        gap: '1rem',
+        textAlign: 'center',
+      }}
+    >
+      <div>
+        <div style={{ fontSize: '2rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
+          {timer?.speaker?.name}
+        </div>
+        <div
+          style={{
+            fontSize: 'min(30vw, 18rem)',
+            lineHeight: 1,
+            fontWeight: 800,
+            fontVariantNumeric: 'tabular-nums',
+            color: COLOR_HEX[color],
+          }}
+        >
+          {formatClock(remaining)}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function Centered({
+  children,
+  muted,
+}: {
+  children: React.ReactNode
+  muted?: boolean
+}) {
+  return (
+    <div
+      style={{
+        minHeight: '100svh',
+        display: 'grid',
+        placeItems: 'center',
+        fontSize: '2rem',
+        color: muted ? 'var(--text-muted)' : 'var(--text-h)',
+      }}
+    >
+      {children}
+    </div>
+  )
+}
+
 export default function Countdown() {
   return (
-    <main style={{ padding: '2rem' }}>
-      <h1>Countdown</h1>
-      <p>Page 3 — the current speaker's timer.</p>
-    </main>
+    <ActiveDebateProvider>
+      <CountdownInner />
+    </ActiveDebateProvider>
   )
 }
