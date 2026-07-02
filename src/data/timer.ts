@@ -41,17 +41,24 @@ export async function advanceSpeaker(debateId: number): Promise<void> {
 export function computeRemaining(t: TimerState | null): number {
   if (!t) return 0
   const banked = Number(t.accumulated_seconds)
+  // Clamp the running segment to >= 0 so client/server clock skew can never make
+  // remaining briefly exceed the full duration (which flashed "11" on start).
   const running =
     t.status === 'running' && t.started_at
-      ? (Date.now() - new Date(t.started_at).getTime()) / 1000
+      ? Math.max(0, (Date.now() - new Date(t.started_at).getTime()) / 1000)
       : 0
   return t.duration_seconds - banked - running
 }
 
-/** Format seconds as m:ss (or -m:ss when over time). */
-export function formatClock(seconds: number): string {
-  const neg = seconds < 0
-  const s = Math.floor(Math.abs(seconds))
+/**
+ * Format remaining seconds as m:ss (or -m:ss when over time).
+ * Uses ceil so a countdown shows "N" for the whole Nth second — this keeps the
+ * displayed number in step with the colour thresholds (yellow at 5 shows on 5).
+ */
+export function formatClock(remaining: number): string {
+  const total = Math.ceil(remaining)
+  const neg = total < 0
+  const s = Math.abs(total)
   const m = Math.floor(s / 60)
   const rem = s % 60
   return `${neg ? '-' : ''}${m}:${rem.toString().padStart(2, '0')}`
