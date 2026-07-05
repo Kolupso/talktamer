@@ -111,6 +111,66 @@ Goal: layer ordering rules onto the waiting list, each behind a toggle. Build a 
 
 ---
 
+## Phase 10 — Adjustments & additions
+Grouped into batches; work top-to-bottom, one item at a time (build → user tests →
+commit), same rhythm as before. Tags: [mig] = needs a SQL migration,
+[asset] = needs a file from the user, [decide] = needs a decision before building.
+
+### Batch A — Quick wins (no migration)
+- **A1. Browser tab title** → change `scaffold` to `TalkTamer` in `index.html`.
+- **A2. Enter-to-add** in the waiting-list "add speaker" search (Enter adds the top
+  result, in addition to clicking Add). [decide: confirm "top result" is what's wanted]
+- **A3. Show speaker id** in the waiting list rows.
+- **A4. Register scroller** — cap the register table height with a scroll area.
+- **A5. Background back to white** — light theme `--bg` cream → white (keep orange +
+  black accents). Coordinated with the dark-mode toggle (D-batch) so the theme
+  system is done once.
+- **A6. Confirm before toggling a special rule** — a confirm step when enabling or
+  disabling rule 1/2/3.
+- **A7. Fix: newly-added register speakers aren't searchable in the waiting-list
+  search until refresh** — share/refresh the speaker list between the register and
+  the waiting-list panel (shared source or realtime), so it updates live.
+
+### Batch B — Ordering engine changes (pure logic + tests)
+- **B1. Only position 1 locked** (not 1 & 2): `LOCKED_COUNT` 2 → 1; update rows/tests.
+- **B2. Zebra respects position first, then gender** [decide]: rule 2 should no longer
+  always force woman/enby to the top of the rest. Proposed rule: the leader (top of
+  the unlocked rest, by position) stays, and the zebra alternation *starts from that
+  leader's gender* — so "man on top + woman added → man stays, woman second." Confirm
+  this interpretation before I change the tested engine. Applies within each group
+  when rule 1 + 2 are both on.
+
+### Batch C — Register data model & tools
+- **C1. Split name into first + last name** [mig]: `speakers.name` → `first_name` +
+  `last_name`; update register CRUD, search (both fields), CSV import/export columns,
+  waiting/display rendering, and the `speech_log` name snapshot.
+  [decide: how to split existing single-name rows; CSV column names]
+- **C2. Reset the register** [mig]: a guarded, confirmed action that clears all
+  speakers and restarts the id sequence at 1 (keeps `speech_log` history via its
+  snapshotted names). Cascades clear waiting lists / participation.
+- **C3. Speak-count column in the register table** — show how many times each speaker
+  has spoken in the *active* debate (from `debate_participation`), live.
+
+### Batch D — Design & layout pass
+- **D1. Branded header** on the manager dashboard.
+- **D2. Dark-mode toggle button** — manual light/dark switch, persisted, overriding the
+  OS preference. Restructures the theme to attribute-based tokens (pairs with A5).
+- **D3. Two-column dashboard** — waiting list on the right.
+- **D4. Settings behind a hamburger (☰) menu / drawer** to reclaim space.
+- **D5. General design polish** — spacing, panels, typography (umbrella; refine as we go).
+
+### Batch E — Displays & assets
+- **E1. "Now speaking" banner on page 2** — compact, low-height.
+- **E2. Custom stop icon** [asset]: replace the 🚫 emoji (list-closed) with a
+  user-provided jpg/png, on page 2 and the dashboard. [needs the image file]
+
+### Up-front needs
+- [decide] A2 (Enter target), B2 (zebra semantics), C1 (name split details).
+- [mig] C1 (name columns), C2 (reset RPC).
+- [asset] E2 (stop-icon image — drop the file in `public/` or hand it over).
+
+---
+
 ## Decisions (settled)
 - **All three windows require login — permanently.** Every view sits behind auth. The
   read-only public link idea was dropped (2026-07-05) for privacy; the projector machine
