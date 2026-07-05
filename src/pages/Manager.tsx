@@ -6,6 +6,7 @@ import DebateSettings from '../components/DebateSettings'
 import TimerController from '../components/TimerController'
 import WaitingListManager from '../components/WaitingListManager'
 import SpeakerRegister from '../components/SpeakerRegister'
+import StatisticsPanel from '../components/StatisticsPanel'
 
 export default function Manager() {
   const { user, signOut } = useAuth()
@@ -36,6 +37,7 @@ export default function Manager() {
         <WaitingListManager />
         <DebateSettings />
         <SpeakerRegister />
+        <StatisticsPanel />
       </main>
     </ActiveDebateProvider>
   )

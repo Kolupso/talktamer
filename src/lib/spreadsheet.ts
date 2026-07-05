@@ -1,5 +1,6 @@
 import type { Gender, Speaker } from '../types/db'
 import type { SpeakerInput } from '../data/speakers'
+import type { StatRow } from '../data/stats'
 
 // xlsx is large (~600 kB). Load it on demand so it stays out of the main bundle
 // and off the display windows, which never import/export.
@@ -70,4 +71,25 @@ export async function downloadSpeakers(speakers: Speaker[]) {
   const workbook = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Register')
   XLSX.writeFile(workbook, 'talktamer-register.xlsx')
+}
+
+/** Download the speech-log statistics as an .xlsx file. */
+export async function downloadStatistics(rows: StatRow[], filename: string) {
+  const XLSX = await loadXLSX()
+  const data = rows.map((r) => ({
+    'Debate ID': r.debate_id,
+    'Debate name': r.debate_name,
+    'Speaker ID': r.speaker_id,
+    'Speaker name': r.speaker_name,
+    Gender: r.speaker_gender,
+    'First time': r.was_first_time ? 'yes' : 'no',
+    'Allotted (s)': r.allotted_seconds,
+    'Spoke (s)': r.spoke_seconds,
+    Removed: r.removed ? 'yes' : 'no',
+    Timestamp: r.created_at,
+  }))
+  const worksheet = XLSX.utils.json_to_sheet(data)
+  const workbook = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Statistics')
+  XLSX.writeFile(workbook, filename)
 }

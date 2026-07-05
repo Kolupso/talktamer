@@ -5,7 +5,7 @@ TalkTamer. Companion docs: **[PLAN.md](PLAN.md)** (the phased roadmap, with
 settled decisions) and **[description.txt](description.txt)** (the user's
 original spec — do not edit it).
 
-_Last updated: end of 2026-07-02, after Phase 7._
+_Last updated: 2026-07-05, after Phase 8._
 
 ---
 
@@ -36,7 +36,7 @@ A debate-management web app with **three login-gated browser windows**:
 
 ---
 
-## Current status: Phases 0–7 DONE. Next: Phase 8.
+## Current status: Phases 0–8 DONE. Next: Phase 9.
 All committed and pushed. `git log` matches the phase commits below.
 
 - **Phase 0** ✅ scaffold, routing, deploy pipeline live on Cloudflare.
@@ -51,23 +51,17 @@ All committed and pushed. `git log` matches the phase commits below.
   unit-tested** ordering engine ([src/lib/ordering.ts](src/lib/ordering.ts),
   tests in `ordering.test.ts`, 7 passing).
 
-### Phase 8 (do next) — remaining polish features
-See PLAN.md steps 40–43. Concretely:
-- **Remaining-debate-time estimate**: sum of max speak-time for remaining
-  (non-skipped) waiting speakers. Show on the dashboard.
-- **Statistics export (Excel)**: the user wants a **speech log** export — one row
-  per speech event from the `speech_log` table (speaker register info, duration
-  spoken `spoke_seconds`, `was_first_time`, timestamp, `removed` flag). A speaker
-  who spoke multiple times has multiple rows; removed speakers appear with
-  `removed=true`. Reuse the xlsx helper pattern in
-  [src/lib/spreadsheet.ts](src/lib/spreadsheet.ts).
-- **List-closed icon** 🚫 — already implemented in Phase 7 (dashboard + page 2).
-  Just confirm it's complete.
-- **Show/hide countdown on page 2** — the `show_countdown_on_waiting` setting
-  exists and saves, but page 2 does NOT yet render a countdown when it's on.
-  Wire page 2 to show the timer (reuse `useTimer`) when that toggle is on.
+### Phase 8 ✅ (done)
+- **Remaining-debate-time estimate** — shown in the waiting-list panel heading
+  (`WaitingListManager`), sum of allotted time over non-skipped waiting speakers.
+- **Statistics export (Excel)** — `StatisticsPanel` + [src/data/stats.ts](src/data/stats.ts);
+  exports `speech_log` joined to `debates` (includes **Debate name** column per
+  user request). Two buttons: current debate / all debates.
+- **List-closed icon** 🚫 — done in Phase 7.
+- **Page-2 countdown** — `Waiting.tsx` renders `WaitingCountdown` (via `useTimer`)
+  when `show_countdown_on_waiting` is on.
 
-### Phase 9 — hardening + the read-only display link
+### Phase 9 (do next) — hardening + the read-only display link
 - Realtime edge cases (refresh mid-timer, reconnect, two managers).
 - Responsive/projector layouts for pages 2 & 3.
 - **Read-only display link** (PLAN step 47): a shared no-login link for pages 2/3

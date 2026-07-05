@@ -50,6 +50,16 @@ export function computeRemaining(t: TimerState | null): number {
   return t.duration_seconds - banked - running
 }
 
+/** Format a positive duration as h:mm:ss (dropping the hours part when zero). */
+export function formatDuration(seconds: number): string {
+  const s = Math.max(0, Math.round(seconds))
+  const h = Math.floor(s / 3600)
+  const m = Math.floor((s % 3600) / 60)
+  const sec = s % 60
+  const pad = (n: number) => n.toString().padStart(2, '0')
+  return h > 0 ? `${h}:${pad(m)}:${pad(sec)}` : `${m}:${pad(sec)}`
+}
+
 /**
  * Format remaining seconds as m:ss (or -m:ss when over time).
  * Uses ceil so a countdown shows "N" for the whole Nth second — this keeps the

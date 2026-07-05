@@ -9,6 +9,7 @@ import {
   setSkipped,
 } from '../data/waitingList'
 import WaitingRows from './WaitingRows'
+import { formatDuration } from '../data/timer'
 import type { Speaker } from '../types/db'
 
 export default function WaitingListManager() {
@@ -48,6 +49,22 @@ export default function WaitingListManager() {
       .filter((s) => s.name.toLowerCase().includes(q) || String(s.id) === q)
       .slice(0, 8)
   }, [speakers, search])
+
+  // Estimated remaining debate time: sum of each non-skipped waiting speaker's
+  // allotted time (first-time vs multiple-time).
+  const estimateSeconds = useMemo(() => {
+    if (!activeDebate) return 0
+    return entries
+      .filter((e) => !e.skipped)
+      .reduce(
+        (sum, e) =>
+          sum +
+          (e.is_first_time
+            ? activeDebate.first_time_seconds
+            : activeDebate.multi_time_seconds),
+        0,
+      )
+  }, [entries, activeDebate])
 
   async function run(fn: () => Promise<void>) {
     setActionError(null)
@@ -145,6 +162,10 @@ export default function WaitingListManager() {
           </span>
         )}
       </h2>
+      <p style={{ color: 'var(--text-muted)', marginTop: 0 }}>
+        Estimated remaining debate time:{' '}
+        <strong>{formatDuration(estimateSeconds)}</strong>
+      </p>
       {error && <p style={{ color: 'var(--danger)' }}>{error}</p>}
       {actionError && <p style={{ color: 'var(--danger)' }}>{actionError}</p>}
 

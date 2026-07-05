@@ -3,7 +3,48 @@ import {
   useActiveDebate,
 } from '../debate/ActiveDebateProvider'
 import { useOrderedWaiting } from '../hooks/useOrderedWaiting'
+import { useTimer, timerColor, COLOR_HEX } from '../hooks/useTimer'
+import { formatClock } from '../data/timer'
 import WaitingRows from '../components/WaitingRows'
+
+function WaitingCountdown() {
+  const { activeDebate } = useActiveDebate()
+  const { timer, remaining } = useTimer(activeDebate?.id ?? null)
+  if (!activeDebate || !timer?.current_speaker_id) return null
+
+  const color = activeDebate.show_color_indicators
+    ? timerColor(
+        remaining,
+        activeDebate.yellow_threshold_seconds,
+        activeDebate.red_threshold_seconds,
+      )
+    : 'normal'
+
+  return (
+    <div
+      style={{
+        textAlign: 'center',
+        marginBottom: '1.5rem',
+        padding: '0.75rem',
+        borderBottom: '1px solid var(--border)',
+      }}
+    >
+      <span style={{ color: 'var(--text-muted)', marginRight: '1rem' }}>
+        {timer.speaker?.name}
+      </span>
+      <span
+        style={{
+          fontSize: '2.5rem',
+          fontWeight: 800,
+          fontVariantNumeric: 'tabular-nums',
+          color: COLOR_HEX[color],
+        }}
+      >
+        {formatClock(remaining)}
+      </span>
+    </div>
+  )
+}
 
 function WaitingInner() {
   const { activeDebate, loading: debateLoading } = useActiveDebate()
@@ -30,6 +71,7 @@ function WaitingInner() {
           </span>
         )}
       </h1>
+      {activeDebate.show_countdown_on_waiting && <WaitingCountdown />}
       {loading ? (
         <Centered>Loading…</Centered>
       ) : entries.length === 0 ? (
