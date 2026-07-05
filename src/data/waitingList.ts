@@ -92,7 +92,7 @@ export async function setSkipped(
     if (!skipped && error.code === '23505') {
       throw new Error(
         'That speaker already has an active entry on the waiting list. ' +
-          'Delete their active entry first, or delete this skipped one instead.',
+          'Delete their active entry first.',
       )
     }
     throw error
