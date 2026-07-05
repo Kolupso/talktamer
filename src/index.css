@@ -1,14 +1,18 @@
 :root {
-  --text: #3a3542;
-  --text-muted: #6b6375;
-  --text-h: #08060d;
-  --bg: #ffffff;
-  --panel: #faf9fb;
-  --border: #e5e4e7;
-  --accent: #7c3aed;
-  --accent-text: #ffffff;
-  --danger: #dc2626;
-  --code-bg: #f4f3ec;
+  /* Brand palette: orange #EF4123, cream #FBF5D0, black #000 */
+  --brand-orange: #ef4123;
+  --brand-cream: #fbf5d0;
+
+  --text: #171717;
+  --text-muted: #6b6455;
+  --text-h: #000000;
+  --bg: #fbf5d0;
+  --panel: #fffdf4;
+  --border: #e3d9ae;
+  --accent: #ef4123;
+  --accent-text: #000000;
+  --danger: #b00020;
+  --code-bg: #f1e9c4;
 
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
   --mono: ui-monospace, Consolas, monospace;
@@ -22,16 +26,16 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --text: #d5d3da;
-    --text-muted: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --panel: #1f2028;
-    --border: #2e303a;
-    --accent: #c084fc;
-    --accent-text: #16171d;
-    --danger: #f87171;
-    --code-bg: #1f2028;
+    --text: #e8e1c4;
+    --text-muted: #a49e86;
+    --text-h: #fbf5d0;
+    --bg: #100f0c;
+    --panel: #1c1a15;
+    --border: #34302a;
+    --accent: #ef4123;
+    --accent-text: #000000;
+    --danger: #ff7a6b;
+    --code-bg: #26231c;
   }
 }
 
@@ -48,7 +52,7 @@ h1,
 h2,
 h3 {
   color: var(--text-h);
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.2;
 }
 h1 {
@@ -72,8 +76,11 @@ button {
   color: var(--text-h);
   border-radius: 6px;
   padding: 0.4rem 0.75rem;
+  transition:
+    border-color 0.12s ease,
+    background 0.12s ease;
 }
-button:hover {
+button:hover:not(:disabled) {
   border-color: var(--accent);
 }
 button:disabled {
@@ -84,16 +91,25 @@ button.primary {
   background: var(--accent);
   color: var(--accent-text);
   border-color: var(--accent);
+  font-weight: 600;
+}
+button.primary:hover:not(:disabled) {
+  filter: brightness(1.05);
 }
 button.danger {
   color: var(--danger);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 
 input,
 select {
   font: inherit;
   color: var(--text-h);
-  background: var(--bg);
+  background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 6px;
   padding: 0.4rem 0.5rem;
