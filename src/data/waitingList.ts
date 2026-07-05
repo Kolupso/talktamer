@@ -86,7 +86,17 @@ export async function setSkipped(
     .from('waiting_list')
     .update({ skipped })
     .eq('id', entryId)
-  if (error) throw error
+  if (error) {
+    // Restoring collides with the partial unique index when the speaker already
+    // has an active (re-added) entry on the list.
+    if (!skipped && error.code === '23505') {
+      throw new Error(
+        'That speaker already has an active entry on the waiting list. ' +
+          'Delete their active entry first, or delete this skipped one instead.',
+      )
+    }
+    throw error
+  }
 }
 
 /** Persist a computed order (waiting_list ids in the desired sequence). */
