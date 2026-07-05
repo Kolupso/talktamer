@@ -35,12 +35,18 @@ function CountdownInner() {
       }}
     >
       <div>
-        <div style={{ fontSize: '2rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>
+        <div
+          style={{
+            fontSize: 'clamp(1.5rem, 6vw, 4rem)',
+            color: 'var(--text-muted)',
+            marginBottom: '1rem',
+          }}
+        >
           {timer?.speaker?.name}
         </div>
         <div
           style={{
-            fontSize: 'min(30vw, 18rem)',
+            fontSize: 'min(34vw, 22rem)',
             lineHeight: 1,
             fontWeight: 800,
             fontVariantNumeric: 'tabular-nums',

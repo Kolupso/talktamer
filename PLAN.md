@@ -104,16 +104,17 @@ Goal: layer ordering rules onto the waiting list, each behind a toggle. Build a 
 44. Realtime edge cases: refresh mid-timer, reconnect, two managers open.
 45. Responsive layouts for projector/large displays (pages 2 & 3).
 46. Error/empty/loading states.
-47. **Read-only display link** — a shared, no-login link for the projector screens
-    (pages 2 & 3), so an operator doesn't have to log in on the display machine.
-    Until this phase ships, all three windows require login (see Decisions).
+47. ~~Read-only display link~~ — **DROPPED by decision (2026-07-05).** Displays stay
+    login-required for privacy; the projector machine logs in once (shared account,
+    session persists) rather than exposing any data via a public link.
 48. Final deploy + walkthrough of a full mock debate.
 
 ---
 
 ## Decisions (settled)
-- **All three windows require login for now.** Every view sits behind auth. A shared
-  read-only link for the display windows (pages 2 & 3) is a later enhancement — see Phase 9, step 47.
+- **All three windows require login — permanently.** Every view sits behind auth. The
+  read-only public link idea was dropped (2026-07-05) for privacy; the projector machine
+  logs in once and the session persists.
 - **Frontend uses the Supabase *publishable* key only** (`sb_publishable_...`), never the
   secret/service-role key. `VITE_`-prefixed vars ship to the browser; the secret key bypasses
   RLS, so it must never appear in client code. Any admin-only work runs server-side.

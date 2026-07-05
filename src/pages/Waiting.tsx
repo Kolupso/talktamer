@@ -34,7 +34,7 @@ function WaitingCountdown() {
       </span>
       <span
         style={{
-          fontSize: '2.5rem',
+          fontSize: 'clamp(2.5rem, 8vw, 6rem)',
           fontWeight: 800,
           fontVariantNumeric: 'tabular-nums',
           color: COLOR_HEX[color],
@@ -62,8 +62,13 @@ function WaitingInner() {
   const showGender = rule2 && activeDebate.show_gender_indicators
 
   return (
-    <div style={{ padding: '2rem', maxWidth: 800, margin: '0 auto' }}>
-      <h1 style={{ textAlign: 'center' }}>
+    <div style={{ padding: '2rem', maxWidth: 1100, margin: '0 auto' }}>
+      <h1
+        style={{
+          textAlign: 'center',
+          fontSize: 'clamp(1.75rem, 5vw, 3.5rem)',
+        }}
+      >
         {activeDebate.name}
         {activeDebate.list_closed && (
           <span title="List closed to new sign-ups" style={{ marginLeft: '0.75rem' }}>
@@ -81,7 +86,7 @@ function WaitingInner() {
           entries={entries}
           rule1={rule1}
           showGender={showGender}
-          fontSize="1.5rem"
+          fontSize="clamp(1.25rem, 3vw, 2.25rem)"
         />
       )}
     </div>
