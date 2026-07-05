@@ -34,8 +34,10 @@ export default function WaitingListManager() {
       .catch((e) => setActionError((e as Error).message))
   }, [])
 
-  const onListSpeakerIds = useMemo(
-    () => new Set(entries.map((e) => e.speaker_id)),
+  // Only an ACTIVE (non-skipped) row blocks re-adding — a speaker whose only
+  // row is skipped can be added again as a fresh entry.
+  const activeSpeakerIds = useMemo(
+    () => new Set(entries.filter((e) => !e.skipped).map((e) => e.speaker_id)),
     [entries],
   )
 
@@ -156,7 +158,7 @@ export default function WaitingListManager() {
         {results.length > 0 && (
           <ul style={{ listStyle: 'none', padding: 0, margin: '0.5rem 0', maxWidth: 420 }}>
             {results.map((s) => {
-              const already = onListSpeakerIds.has(s.id)
+              const already = activeSpeakerIds.has(s.id)
               return (
                 <li
                   key={s.id}

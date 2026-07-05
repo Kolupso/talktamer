@@ -126,6 +126,11 @@ Files in `supabase/migrations/`. TS mirror: [src/types/db.ts](src/types/db.ts).
 - **0005** — `position` column on `waiting_list` (persisted display order;
   positions 1&2 are the locked slots); `reorder_waiting(debate_id, ids[])` RPC;
   `advance_speaker` updated to pick by `position` and renumber.
+- **0006** — rule-3 rework: replaced the full `unique(debate_id, speaker_id)`
+  with a **partial unique index** (`where not skipped`) so a speaker can be
+  re-added while an old skipped row remains (≤1 active row, many skipped rows);
+  `advance_speaker` now drops+logs (`removed=true`) any skipped speakers ahead of
+  the chosen next speaker.
 
 ## Architecture notes / gotchas
 - **Timer = state, not ticks.** `timer_state` stores `status`,
