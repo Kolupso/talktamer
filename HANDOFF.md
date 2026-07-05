@@ -5,7 +5,7 @@ TalkTamer. Companion docs: **[PLAN.md](PLAN.md)** (the phased roadmap, with
 settled decisions) and **[description.txt](description.txt)** (the user's
 original spec — do not edit it).
 
-_Last updated: 2026-07-05, after Phase 8._
+_Last updated: 2026-07-05, after Phase 9. Phase 10 planned (see PLAN.md)._
 
 ---
 
@@ -36,8 +36,9 @@ A debate-management web app with **three login-gated browser windows**:
 
 ---
 
-## Current status: Phases 0–8 DONE. Next: Phase 9.
+## Current status: Phases 0–9 DONE. Next: Phase 10 (batched, planned in PLAN.md).
 All committed and pushed. `git log` matches the phase commits below.
+The core app is functionally complete; a full mock-debate run-through found no bugs.
 
 - **Phase 0** ✅ scaffold, routing, deploy pipeline live on Cloudflare.
 - **Phase 1** ✅ email/password auth; all routes behind `ProtectedRoute`.
@@ -61,12 +62,38 @@ All committed and pushed. `git log` matches the phase commits below.
 - **Page-2 countdown** — `Waiting.tsx` renders `WaitingCountdown` (via `useTimer`)
   when `show_countdown_on_waiting` is on.
 
-### Phase 9 (do next) — hardening + the read-only display link
-- Realtime edge cases (refresh mid-timer, reconnect, two managers).
-- Responsive/projector layouts for pages 2 & 3.
-- **Read-only display link** (PLAN step 47): a shared no-login link for pages 2/3
-  so an operator needn't log in on the display machine. Currently ALL windows
-  require login. This was deferred here deliberately.
+### Phase 9 ✅ (done)
+- **Brand palette** applied ([src/index.css](src/index.css)): orange `#EF4123`,
+  cream/white `#FBF5D0`, black `#000`, light + dark. (Note: Phase 10 A5 changes the
+  light background from cream back to white.)
+- **Projector-friendly displays** — pages 2 & 3 use `clamp()`/`vw` responsive type.
+- **Read-only display link DROPPED** (user decision 2026-07-05): all three windows
+  stay login-required for privacy; the projector machine logs in once (shared
+  account, session persists). No public-read policies were added.
+
+### Phase 10 (do next) — adjustments & additions
+The user gave a 19-item list, captured in **[PLAN.md](PLAN.md) → Phase 10**, grouped
+into batches A–E (work top-to-bottom, one item at a time, build→test→commit):
+- **A — quick wins:** tab title→TalkTamer, Enter-to-add (adds TOP result — decided),
+  show speaker id in waiting list, register scroller, light bg cream→white, confirm
+  before toggling a special rule, fix newly-added register speakers not appearing in
+  the waiting-list search until refresh.
+- **B — ordering engine (update `ordering.ts` + tests):** only position 1 locked
+  (`LOCKED_COUNT` 2→1); zebra should respect position first then gender — proposed:
+  leader of the rest stays and alternation starts from their gender (CONFIRM with user
+  before changing the tested engine).
+- **C — register model:** [mig] split `name`→`first_name`+`last_name` (touches CRUD,
+  search, CSV import/export, displays, `speech_log` snapshot); [mig] reset-register
+  action (clear speakers + restart id sequence, keep `speech_log`); speak-count column
+  in the register table (from `debate_participation`, for the active debate).
+- **D — design/layout:** branded header; dark-mode toggle button (persisted,
+  attribute-based theme — pairs with A5); two-column dashboard (waiting list right);
+  settings behind a ☰ menu/drawer; general polish.
+- **E — displays/assets:** compact "now speaking" banner on page 2; [asset] custom
+  jpg/png stop icon to replace the 🚫 (user to supply the file, e.g. in `public/`).
+
+Up-front needs before their batches: decisions on B (zebra) and C1 (name split
+details + CSV columns); the stop-icon image for E2.
 
 ---
 
